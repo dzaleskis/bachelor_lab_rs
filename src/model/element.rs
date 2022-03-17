@@ -1,5 +1,6 @@
 use core::cell::Cell;
 use std::cmp::Ordering;
+use std::mem;
 
 #[derive(Default, Debug, Copy, Clone)]
 pub struct OperationsReport {
@@ -9,12 +10,12 @@ pub struct OperationsReport {
 
 thread_local!(static REPORT: Cell<OperationsReport> = Cell::new(Default::default()));
 
-fn increase_assignments() {
+fn increase_assignments(inc: u32) {
     REPORT.with(|report_cell| {
         let prev_report = report_cell.get();
 
         report_cell.set(OperationsReport {
-            assignments: prev_report.assignments + 1,
+            assignments: prev_report.assignments + inc,
             ..prev_report
         });
     });
@@ -47,9 +48,9 @@ fn get_report() -> OperationsReport {
     report
 }
 
-pub fn with_report<F, R>(f: F) -> (OperationsReport, R)
+pub fn with_report<F, R>(mut f: F) -> (OperationsReport, R)
 where
-    F: Fn() -> R,
+    F: FnMut() -> R,
 {
     let result = f();
     let report = get_report();
@@ -58,6 +59,7 @@ where
     (report, result)
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct Element<T> {
     value: T,
 }
@@ -93,9 +95,10 @@ impl<T: Copy> Element<T> {
         Element { value }
     }
 
-    pub fn assign(&mut self, other: &Self) {
-        increase_assignments();
+    pub fn swap(slice: &mut [Element<T>], i: usize, j: usize) {
+        // TODO: track average swap distance (that's why this takes indexes as args)
+        increase_assignments(3);
 
-        self.value = other.value;
+        slice.swap(i, j);
     }
 }

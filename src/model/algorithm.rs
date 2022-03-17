@@ -9,10 +9,14 @@ use crate::utils::slice::rand_index;
 use oxigen::prelude::Genotype;
 use rand::distributions::Uniform;
 use rand::prelude::*;
+use crate::model::element::with_report;
+use crate::utils::test_data::get_test_data;
+use crate::passes::runner::run_pass;
 
-#[derive(Debug, Clone, PartialEq, Eq, std::hash::Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Algorithm {
     passes: Vec<Pass>,
+    data_size: u32,
 }
 
 impl Display for Algorithm {
@@ -23,7 +27,6 @@ impl Display for Algorithm {
 
 impl Genotype<Pass> for Algorithm {
     type ProblemSize = u32;
-    type GenotypeHash = Self;
 
     fn iter(&self) -> Iter<Pass> {
         self.passes.iter()
@@ -49,11 +52,23 @@ impl Genotype<Pass> for Algorithm {
             })
         });
 
-        Algorithm { passes }
+        Algorithm { passes, data_size: *size }
     }
 
     fn fitness(&self) -> f64 {
-        todo!()
+        // FITNESS, NOT COST (HIGHER IS BETTER)
+        let mut data = get_test_data(self.data_size as usize);
+        let min_comparisons = 12000.0;
+        let min_assignments = 13000.0;
+
+        let (report, _) = with_report(|| self.passes.iter().rev().for_each(|pass| run_pass(pass, &mut data)));
+        let comparisons = report.comparisons as f64;
+        let assignments = report.assignments as f64;
+
+        let normalized_comparisons = min_comparisons / comparisons;
+        let normalized_assignments = min_assignments / assignments;
+
+        return (0.5 * normalized_comparisons) + (0.5 * normalized_assignments);
     }
 
     fn mutate(&mut self, rgen: &mut SmallRng, index: usize) {
@@ -63,9 +78,5 @@ impl Genotype<Pass> for Algorithm {
     fn is_solution(&self, _fitness: f64) -> bool {
         // TODO: any way to determine correctly?
         false
-    }
-
-    fn hash(&self) -> Self::GenotypeHash {
-        self.clone()
     }
 }

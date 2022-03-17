@@ -20,8 +20,8 @@ static ALL_PASS_TYPES: [PassType; 5] = [
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, std::hash::Hash)]
 pub struct Pass {
-    pub(crate) pass_type: PassType,
-    pub(crate) gap: u32,
+    pub pass_type: PassType,
+    pub gap: u32,
 }
 
 #[inline]

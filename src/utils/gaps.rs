@@ -1,14 +1,14 @@
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
-pub fn generate_geometric_gaps(max: u32, q: f32) -> Vec<u32> {
-    let mut gaps = HashSet::new();
-    let mut current_gap = 1;
+pub fn generate_geometric_gaps(size: u32, q: f32) -> Vec<u32> {
+    let mut gaps = BTreeSet::new();
+    let max = (size-1) as f32;
+    let mut current_gap = 1.0;
 
     while current_gap < max {
-        gaps.insert(current_gap);
-        let new_gap = (current_gap as f32) * q;
-        current_gap = new_gap as u32;
+        gaps.insert(current_gap as u32);
+        current_gap *= q;
     }
 
-    return Vec::from_iter(gaps);
+    Vec::from_iter(gaps)
 }

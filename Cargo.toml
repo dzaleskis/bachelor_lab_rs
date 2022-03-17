@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-oxigen = { version = "2.2.2", features = ["global_cache"] }
+oxigen = { version = "2.2.2" }
 clap = { version = "3.1.0", features = ["derive"] }
 rand = "0.7"
