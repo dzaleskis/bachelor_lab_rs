@@ -2,16 +2,14 @@ use super::pass::Pass;
 use std::fmt::{Display, Formatter};
 use std::slice::Iter;
 use std::vec::IntoIter;
-
 use crate::model::pass::get_random_pass_type;
+use crate::passes::runner::{run_pass, run_passes};
 use crate::utils::gaps::generate_geometric_gaps;
 use crate::utils::slice::rand_index;
+use crate::utils::test_data::get_test_data;
 use oxigen::prelude::Genotype;
 use rand::distributions::Uniform;
 use rand::prelude::*;
-use crate::model::element::with_report;
-use crate::utils::test_data::get_test_data;
-use crate::passes::runner::run_pass;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Algorithm {
@@ -52,7 +50,10 @@ impl Genotype<Pass> for Algorithm {
             })
         });
 
-        Algorithm { passes, data_size: *size }
+        Algorithm {
+            passes,
+            data_size: *size,
+        }
     }
 
     fn fitness(&self) -> f64 {
@@ -61,7 +62,7 @@ impl Genotype<Pass> for Algorithm {
         let min_comparisons = 12000.0;
         let min_assignments = 13000.0;
 
-        let (report, _) = with_report(|| self.passes.iter().rev().for_each(|pass| run_pass(pass, &mut data)));
+        let report = run_passes(&self.passes, &mut data);
         let comparisons = report.comparisons as f64;
         let assignments = report.assignments as f64;
 

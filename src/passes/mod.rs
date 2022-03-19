@@ -1,3 +1,3 @@
 pub mod runner;
-pub mod traced;
 mod tests;
+pub mod traced;

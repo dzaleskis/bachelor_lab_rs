@@ -3,60 +3,40 @@ use std::cmp::Ordering;
 use std::mem;
 
 #[derive(Default, Debug, Copy, Clone)]
-pub struct OperationsReport {
+pub struct Report {
     pub comparisons: u32,
     pub assignments: u32,
 }
 
-thread_local!(static REPORT: Cell<OperationsReport> = Cell::new(Default::default()));
-
-fn increase_assignments(inc: u32) {
-    REPORT.with(|report_cell| {
-        let prev_report = report_cell.get();
-
-        report_cell.set(OperationsReport {
-            assignments: prev_report.assignments + inc,
-            ..prev_report
-        });
-    });
+impl Report {
+    pub fn add(&mut self, other: &Self) {
+        self.comparisons += other.comparisons;
+        self.assignments += other.assignments;
+    }
 }
 
-fn increase_comparisons() {
-    REPORT.with(|report_cell| {
-        let prev_report = report_cell.get();
-
-        report_cell.set(OperationsReport {
-            comparisons: prev_report.comparisons + 1,
-            ..prev_report
-        });
-    });
+pub struct Reporter {
+    report: Report,
 }
 
-fn reset_report() {
-    REPORT.with(|report_cell| {
-        report_cell.set(Default::default());
-    });
-}
+impl Reporter {
+    pub fn new() -> Reporter {
+        Reporter {
+            report: Default::default(),
+        }
+    }
 
-fn get_report() -> OperationsReport {
-    let mut report: OperationsReport = Default::default();
+    pub fn increase_comparisons(&mut self, count: u32) {
+        self.report.comparisons += count;
+    }
 
-    REPORT.with(|report_cell| {
-        report = report_cell.get();
-    });
+    pub fn increase_assignments(&mut self, count: u32) {
+        self.report.assignments += count;
+    }
 
-    report
-}
-
-pub fn with_report<F, R>(mut f: F) -> (OperationsReport, R)
-where
-    F: FnMut() -> R,
-{
-    let result = f();
-    let report = get_report();
-    reset_report();
-
-    (report, result)
+    pub fn get_report(&self) -> Report {
+        self.report
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -64,41 +44,34 @@ pub struct Element<T> {
     value: T,
 }
 
-impl<T: Ord> Eq for Element<T> {}
-
-impl<T: Ord> PartialEq<Self> for Element<T> {
-    fn eq(&self, other: &Self) -> bool {
-        increase_comparisons();
-
-        self.value.eq(&other.value)
-    }
-}
-
-impl<T: Ord> PartialOrd<Self> for Element<T> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        increase_comparisons();
-
-        self.value.partial_cmp(&other.value)
-    }
-}
-
-impl<T: Ord> Ord for Element<T> {
-    fn cmp(&self, other: &Self) -> Ordering {
-        increase_comparisons();
-
-        self.value.cmp(&other.value)
-    }
-}
-
-impl<T: Copy> Element<T> {
-    pub fn create(value: T) -> Element<T> {
+impl<T: Copy + Ord> Element<T> {
+    pub fn new(value: T) -> Element<T> {
         Element { value }
     }
 
-    pub fn swap(slice: &mut [Element<T>], i: usize, j: usize) {
+    pub fn get_copy(slice: &[Element<T>], i: usize, reporter: &mut Reporter) -> Element<T> {
+        reporter.increase_assignments(1);
+
+        slice[i]
+    }
+
+    pub fn copy_within(slice: &mut [Element<T>], i: usize, j: usize, reporter: &mut Reporter) {
         // TODO: track average swap distance (that's why this takes indexes as args)
-        increase_assignments(3);
+        reporter.increase_assignments(1);
+
+        slice.copy_within(i..i+1, j);
+    }
+
+    pub fn swap(slice: &mut [Element<T>], i: usize, j: usize, reporter: &mut Reporter) {
+        // TODO: track average swap distance (that's why this takes indexes as args)
+        reporter.increase_assignments(3);
 
         slice.swap(i, j);
+    }
+
+    pub fn compare(a: &Self, b: &Self, reporter: &mut Reporter) -> Ordering {
+        reporter.increase_comparisons(1);
+
+        a.value.cmp(&b.value)
     }
 }

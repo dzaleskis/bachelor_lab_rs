@@ -8,5 +8,5 @@ pub fn get_test_data(size: usize) -> Vec<Element<i32>> {
         vec.push(rng.gen());
     }
 
-    vec.iter().map(|num| Element::create(*num)).collect()
+    vec.iter().map(|num| Element::new(*num)).collect()
 }

@@ -5,11 +5,11 @@ mod utils;
 extern crate oxigen;
 extern crate rand;
 
-use std::fs::File;
-use clap::Parser;
-use oxigen::prelude::*;
 use crate::model::algorithm::Algorithm;
 use crate::model::pass::Pass;
+use clap::Parser;
+use oxigen::prelude::*;
+use std::fs::File;
 
 #[derive(Parser, Debug)]
 #[clap(about, long_about = None)]
@@ -31,7 +31,8 @@ fn main() {
     let args = CLIArgs::parse();
 
     let progress_log = File::create("progress.csv").expect("Error creating progress log file");
-    let population_log = File::create("population.txt").expect("Error creating population log file");
+    let population_log =
+        File::create("population.txt").expect("Error creating population log file");
 
     let (solutions, generation, progress, _population) = GeneticExecution::<Pass, Algorithm>::new()
         .population_size(args.population_size)
