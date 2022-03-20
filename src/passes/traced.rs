@@ -39,7 +39,7 @@ pub fn shake_pass<T: Copy + Ord>(slice: &mut [Element<T>], gap: usize) -> Report
         }
     }
 
-    for i in (n - 1)..=0 {
+    for i in (0..n).rev() {
         if is_greater(&slice[i], &slice[i + gap], &mut rep) {
             Element::swap(slice, i, i + gap, &mut rep);
         }
@@ -68,7 +68,7 @@ pub fn insertion_pass<T: Copy + Ord>(slice: &mut [Element<T>], gap: usize) -> Re
     for i in gap..n {
         let mut j = i;
 
-        while j >= gap && is_greater(&slice[j-gap], &slice[j], &mut rep) {
+        while j >= gap && is_greater(&slice[j - gap], &slice[j], &mut rep) {
             Element::swap(slice, j - gap, j, &mut rep);
             j -= gap;
         }
@@ -89,7 +89,7 @@ pub fn insertion_improved_pass<T: Copy + Ord>(slice: &mut [Element<T>], gap: usi
                 Element::swap(slice, j - gap, j, &mut rep);
                 j -= gap;
 
-                if !(j >= gap && is_greater(&slice[j-gap], &slice[j], &mut rep)) {
+                if !(j >= gap && is_greater(&slice[j - gap], &slice[j], &mut rep)) {
                     break;
                 }
             }

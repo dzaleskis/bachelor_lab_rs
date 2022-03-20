@@ -30,7 +30,6 @@ pub struct CLIArgs {
 fn main() {
     let args = CLIArgs::parse();
 
-    let progress_log = File::create("progress.csv").expect("Error creating progress log file");
     let population_log =
         File::create("population.txt").expect("Error creating population log file");
 
@@ -69,7 +68,6 @@ fn main() {
             AgeSlope(0.5),
         )))
         .stop_criterion(Box::new(StopCriteria::Generation(200)))
-        .progress_log(20, progress_log)
         .population_log(20, population_log)
         .run();
 
@@ -77,7 +75,4 @@ fn main() {
         "Finished in the generation {} with a progress of {}",
         generation, progress
     );
-    for sol in &solutions {
-        println!("{}", sol);
-    }
 }

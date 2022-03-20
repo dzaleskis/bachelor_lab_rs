@@ -1,6 +1,4 @@
-use core::cell::Cell;
 use std::cmp::Ordering;
-use std::mem;
 
 #[derive(Default, Debug, Copy, Clone)]
 pub struct Report {
@@ -55,11 +53,15 @@ impl<T: Copy + Ord> Element<T> {
         slice[i]
     }
 
+    pub fn get_value(&self) -> T {
+        self.value
+    }
+
     pub fn copy_within(slice: &mut [Element<T>], i: usize, j: usize, reporter: &mut Reporter) {
         // TODO: track average swap distance (that's why this takes indexes as args)
         reporter.increase_assignments(1);
 
-        slice.copy_within(i..i+1, j);
+        slice.copy_within(i..i + 1, j);
     }
 
     pub fn swap(slice: &mut [Element<T>], i: usize, j: usize, reporter: &mut Reporter) {
